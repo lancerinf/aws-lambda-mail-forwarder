@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  aws-lambda-mail-forwarder
+
+  Sample SAM Template for aws-lambda-mail-forwarder
+
+Resources:
+  MailForwarder:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: mail_forwarder/
+      Handler: app.lambda_handler
+      Runtime: python3.7
+      Timeout: 10
+
+Outputs:
+  MailForwarderArn:
+    Description: "MailForwarder Function ARN"
+    Value: !GetAtt MailForwarder.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-MailForwarderArn'
+  MailForwarderRole:
+    Description: "Implicit IAM Role created for MailForwarder"
+    Value: !GetAtt MailForwarderRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-MailForwarderRole'
