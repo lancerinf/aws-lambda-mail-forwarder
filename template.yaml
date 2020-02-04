@@ -13,6 +13,23 @@ Resources:
       Handler: app.lambda_handler
       Runtime: python3.7
       Timeout: 10
+      Environment:
+        Variables:
+          FORWARD_TO_ADDRESS: 'mymail@example.com'
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !ImportValue mail-lancerin-com-LancerinComMailBucket
+        - SESCrudPolicy:
+            IdentityName: mailforwarder@lancerin.com
+
+  S3NotificationPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt MailForwarder.Arn
+      Action: lambda:InvokeFunction
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref 'AWS::AccountId'
+      SourceArn: !ImportValue mail-lancerin-com-LancerinComMailBucketArn
 
 Outputs:
   MailForwarderArn:
