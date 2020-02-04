@@ -20,8 +20,8 @@ Resources:
       Policies:
         - S3ReadPolicy:
             BucketName: !ImportValue mail-lancerin-com-LancerinComMailBucket
-        - SESCrudPolicy:
-            IdentityName: mailforwarder@lancerin.com
+        - SESBulkTemplatedCrudPolicy:
+            IdentityName: lancerin.com
 
   S3NotificationPermission:
     Type: AWS::Lambda::Permission

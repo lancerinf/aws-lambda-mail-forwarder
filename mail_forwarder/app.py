@@ -35,7 +35,8 @@ def get_object_from_s3(s3_client, s3_notification):
     key = urllib.parse.unquote(s3_notification['s3']['object']['key'])
     s3_object_response = s3_client.get_object(
         Bucket=bucket,
-        Key=key
+        # Key=key
+        Key='inbox/federico@lancerin.com/v2ehb4igsa1n6n9323oqvna4so3knlg6h0985f01'
     )
     return s3_object_response['Body'].read()
 
@@ -50,11 +51,11 @@ def twist_and_forward(ses_client, email_message):
     forward_from = os.environ['FORWARD_FROM_ADDRESS']
     forward_to = os.environ['FORWARD_TO_ADDRESS']
 
-    if not email_message.get('replyTo'):
-        email_message.add_header('replyTo', email_message.get('From'))
+    if not email_message.get('Reply-To'):
+        email_message.add_header('Reply-To', email_message.get('From'))
 
+    del email_message['Return-Path']
     email_message.replace_header('From', forward_from)
-    email_message.replace_header('To', forward_to)
 
     send_result = ses_client.send_raw_email(
         Source=forward_from,
