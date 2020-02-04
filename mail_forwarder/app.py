@@ -1,14 +1,12 @@
 from boto3 import client
 import email
 import urllib.parse
-
-SES_SEND_IDENTITY = 'mailforwarder@lancerin.com'
+import os
+import sys
 
 
 def lambda_handler(event, context):
     s3_notification = event['Records'][0]
-    print("Well well, let's deal with this S3 event: ")
-    print(s3_notification)
 
     try:
         # Fetch file from S3
@@ -17,13 +15,19 @@ def lambda_handler(event, context):
 
         # Check if valid email
         email_message = parse_email_message(s3_object_bytes)
-        print('Received email: \n', email_message)
 
-        # Deep copy MIME OR MODIFY replyTo and sender fields
-        # Send new/modified MIME object with SES
+        # Modify EmailMessage replyTo and From fields
+        # Send new/modified EmailMessage object with SES
+        ses_client = client('ses')
+        send_result = twist_and_forward(ses_client, email_message)
+        print(send_result)
 
     except s3_client.exceptions.NoSuchKey as e:
         print(f'S3Exception(NoSuchKey): {e}')
+    except ses_client.exceptions.ClientError as e:
+        print(f'SESException(ClientError): {e}')
+    except:
+        print(f'Whoops, a new exception was thrown:', sys.exc_info()[0])
 
 
 def get_object_from_s3(s3_client, s3_notification):
@@ -37,7 +41,29 @@ def get_object_from_s3(s3_client, s3_notification):
 
 
 def parse_email_message(s3_object_bytes):
-    print('Is this a valid MIME? ..or Maybe a valid MEME!')
     # Parse email as suggested: https://docs.python.org/3.7/library/email.parser.html
     parsed_email_message = email.message_from_bytes(s3_object_bytes)
     return parsed_email_message
+
+
+def twist_and_forward(ses_client, email_message):
+    forward_from = os.environ['FORWARD_FROM_ADDRESS']
+    forward_to = os.environ['FORWARD_TO_ADDRESS']
+
+    if not email_message.get('replyTo'):
+        email_message.add_header('replyTo', email_message.get('From'))
+
+    email_message.replace_header('From', forward_from)
+    email_message.replace_header('To', forward_to)
+
+    send_result = ses_client.send_raw_email(
+        Source=forward_from,
+        Destinations=[
+            forward_to,
+        ],
+        RawMessage={
+            'Data': email_message.as_bytes()
+        }
+    )
+
+    return send_result

@@ -15,7 +15,8 @@ Resources:
       Timeout: 10
       Environment:
         Variables:
-          FORWARD_TO_ADDRESS: 'mymail@example.com'
+          FORWARD_TO_ADDRESS: 'federico.lancerin@gmail.com'
+          FORWARD_FROM_ADDRESS: 'mailforwarder@lancerin.com'
       Policies:
         - S3ReadPolicy:
             BucketName: !ImportValue mail-lancerin-com-LancerinComMailBucket
