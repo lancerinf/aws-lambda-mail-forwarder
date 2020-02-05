@@ -16,7 +16,7 @@ Resources:
       Environment:
         Variables:
           FORWARD_TO_ADDRESS: 'federico.lancerin@gmail.com'
-          FORWARD_FROM_ADDRESS: 'mailforwarder@lancerin.com'
+          FORWARD_FROM_ADDRESS: 'mail@lancerin.com'
       Policies:
         - S3ReadPolicy:
             BucketName: !ImportValue mail-lancerin-com-LancerinComMailBucket
