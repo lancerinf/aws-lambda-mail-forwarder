@@ -2,39 +2,31 @@ from boto3 import client
 import email
 import urllib.parse
 import os
-import sys
 
 
 def lambda_handler(event, context):
     s3_notification = event['Records'][0]
 
-    try:
-        # Fetch file from S3
-        s3_client = client('s3')
-        s3_object_bytes = get_object_from_s3(s3_client, s3_notification)
+    # Fetch file from S3
+    s3_client = client('s3')
+    s3_object_bytes = get_object_from_s3(s3_client, s3_notification)
 
-        # Check if valid email
-        email_message = parse_email_message(s3_object_bytes)
+    # Parse object as EmailMessage
+    email_message = parse_email_message(s3_object_bytes)
 
-        # Prepare EmailMessage to be forwarded, switch headers
-        email_message = prepare_email_for_forwarding(email_message)
+    # Prepare EmailMessage to be forwarded, switch headers
+    email_message = prepare_email_for_forwarding(email_message)
 
-        # Send modified EmailMessage with SES
-        ses_client = client('ses')
-        send_result = forward_email(ses_client, email_message)
-        return send_result
-
-    except s3_client.exceptions.NoSuchKey as e:
-        print(f'S3Exception(NoSuchKey): {e}')
-    except ses_client.exceptions.ClientError as e:
-        print(f'SESException(ClientError): {e}')
-    except:
-        print(f'Whoops, a new exception was thrown:', sys.exc_info()[0])
+    # Send modified EmailMessage with SES
+    ses_client = client('ses')
+    send_result = forward_email(ses_client, email_message)
+    return send_result
 
 
 def get_object_from_s3(s3_client, s3_notification):
     bucket = s3_notification['s3']['bucket']['name']
     key = urllib.parse.unquote(s3_notification['s3']['object']['key'])
+    print(f'Getting S3 object from {bucket}/{key}')
     s3_object_response = s3_client.get_object(
         Bucket=bucket,
         Key=key
