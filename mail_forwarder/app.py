@@ -25,7 +25,6 @@ def get_object_from_s3(s3_client, trigger_event):
     s3_put_notification = trigger_event['Records'][0]
     bucket = s3_put_notification['s3']['bucket']['name']
     key = urllib.parse.unquote(s3_put_notification['s3']['object']['key'])
-    print(f'Getting S3 object from {bucket}/{key}')
     s3_object_response = s3_client.get_object(
         Bucket=bucket,
         Key=key
