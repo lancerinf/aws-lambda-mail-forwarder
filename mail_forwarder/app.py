@@ -5,14 +5,12 @@ import os
 
 
 def lambda_handler(event, context):
-    s3_notification = event['Records'][0]
-
     # Fetch file from S3
     s3_client = client('s3')
-    s3_object_bytes = get_object_from_s3(s3_client, s3_notification)
+    s3_object_body = get_object_from_s3(s3_client, event)
 
     # Parse object as EmailMessage
-    email_message = parse_email_message(s3_object_bytes)
+    email_message = parse_email_message(s3_object_body)
 
     # Prepare EmailMessage to be forwarded, switch headers
     email_message = prepare_email_for_forwarding(email_message)
@@ -23,20 +21,21 @@ def lambda_handler(event, context):
     return send_result
 
 
-def get_object_from_s3(s3_client, s3_notification):
-    bucket = s3_notification['s3']['bucket']['name']
-    key = urllib.parse.unquote(s3_notification['s3']['object']['key'])
+def get_object_from_s3(s3_client, trigger_event):
+    s3_put_notification = trigger_event['Records'][0]
+    bucket = s3_put_notification['s3']['bucket']['name']
+    key = urllib.parse.unquote(s3_put_notification['s3']['object']['key'])
     print(f'Getting S3 object from {bucket}/{key}')
     s3_object_response = s3_client.get_object(
         Bucket=bucket,
         Key=key
     )
-    return s3_object_response['Body'].read()
+    return s3_object_response['Body']
 
 
-def parse_email_message(s3_object_bytes):
+def parse_email_message(s3_object_body):
     # Parse email as suggested: https://docs.python.org/3.7/library/email.parser.html
-    parsed_email_message = email.message_from_bytes(s3_object_bytes)
+    parsed_email_message = email.message_from_bytes(s3_object_body.read())
     return parsed_email_message
 
 
