@@ -2,6 +2,7 @@ from boto3 import client
 import email
 import urllib.parse
 import os
+from copy import deepcopy
 
 
 def lambda_handler(event, context):
@@ -39,36 +40,36 @@ def parse_email_message(s3_object_body):
 
 
 def prepare_email_for_forwarding(email_message):
-    forward_from = os.environ['FORWARD_FROM_ADDRESS']
-    enriched_from_header = format_friendly_name(email_message['From'], forward_from)
+    forward_from_address = os.environ['FORWARD_FROM_ADDRESS']
+    email_message_copy = deepcopy(email_message)
 
-    # Ensure Reply-To header is set to most relevant Address.
-    if email_message['Return-Path']:
-        if not email_message['Reply-To']:
-            email_message.add_header('Reply-To', email_message['Return-Path'])
-        del email_message['Return-Path']
+    # Ensure Reply-To header is set to most relevant Address while also removing Return-Path header.
+    if 'Reply-To' not in email_message:
+        if 'Return-Path' in email_message: email_message_copy['Reply-To'] = email_message['Return-Path']
+        else: email_message_copy['Reply-To'] = email_message['From']
+    del email_message_copy['Return-Path']
+
+    # Remove any pre-existing DKIM-Signature header.
+    del email_message_copy['DKIM-Signature']
 
     # Set From header to user-friendly name.
-    email_message.replace_header('From', enriched_from_header)
+    email_message_copy.replace_header('From', format_friendly_name(email_message['From'], forward_from_address))
 
-    # Remove all pre-existing DKIM-Signature headers:
-    del email_message['DKIM-Signature']
-    return email_message
+    return email_message_copy
 
 
-def format_friendly_name(email_from_header, forward_from):
-    email_from_header = email_from_header.replace('<', '~')
-    email_from_header = email_from_header.replace('>', '~')
-    return f'{email_from_header} <{forward_from}>'
+def format_friendly_name(email_from_header, forward_from_address):
+    angle_bracket_escaped_from_header = email_from_header.replace('<', '~').replace('>', '~')
+    return f'{angle_bracket_escaped_from_header} <{forward_from_address}>'
 
 
 def forward_email(ses_client, email_message):
-    forward_from = os.environ['FORWARD_FROM_ADDRESS']
+    forward_from_address = os.environ['FORWARD_FROM_ADDRESS']
     forward_to = os.environ['FORWARD_TO_ADDRESS']
 
     # Actually send the email
     send_result = ses_client.send_raw_email(
-        Source=forward_from,
+        Source=forward_from_address,
         Destinations=[
             forward_to,
         ],
