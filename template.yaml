@@ -11,7 +11,7 @@ Resources:
     Properties:
       CodeUri: mail_forwarder/
       Handler: app.lambda_handler
-      Runtime: python3.7
+      Runtime: python3.11
       Timeout: 60
       Environment:
         Variables:

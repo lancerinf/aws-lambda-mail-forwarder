@@ -1,0 +1,11 @@
+version: 0.1
+
+default:
+  global:
+    parameters:
+      stack_name: "lambda-mail-forwarder"
+      capabilities: [
+        "CAPABILITY_NAMED_IAM",
+        "CAPABILITY_AUTO_EXPAND"
+      ]
+      s3_bucket: "lambda-mail-forwarder-sam-deployment"

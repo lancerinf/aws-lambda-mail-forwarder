@@ -1,0 +1,38 @@
+{
+  "Records": [
+    {
+      "eventVersion": "2.1",
+      "eventSource": "aws:s3",
+      "awsRegion": "eu-west-1",
+      "eventTime": "2020-02-04T05:25:48.459Z",
+      "eventName": "ObjectCreated:Put",
+      "userIdentity": {
+        "principalId": "AWS:AIDAJ6K7DK6VAQXGPRIYC"
+      },
+      "requestParameters": {
+        "sourceIPAddress": "10.88.67.31"
+      },
+      "responseElements": {
+        "x-amz-request-id": "E6AB254CC03615A8",
+        "x-amz-id-2": "sTUrTz4DyR8aDI8NC66gr5BqjRHAvkCIcbfmrLtwykJGU7CEarSJ762wCSEpvTIxgs+vVNqW4XuxodtornsECzMSns2MytCS"
+      },
+      "s3": {
+        "s3SchemaVersion": "1.0",
+        "configurationId": "b4f9b8b7-640b-4806-ab93-c663ae441f4e",
+        "bucket": {
+          "name": "lancerin-com-mail-eu-west-1",
+          "ownerIdentity": {
+            "principalId": "AHTB4GF2SJO4M"
+          },
+          "arn": "arn:aws:s3:::lancerin-com-mail-eu-west-1"
+        },
+        "object": {
+          "key": "tests/test_email",
+          "size": 3402,
+          "eTag": "caf67124562bfdf3be08f4af6b20d880",
+          "sequencer": "005E39005FF01A2DDF"
+        }
+      }
+    }
+  ]
+}
